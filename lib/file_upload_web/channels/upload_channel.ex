@@ -20,7 +20,7 @@ defmodule FileUploadWeb.UploadChannel do
     scope = %{start_range: start_range, end_range: end_range}
     {decoded, scope} |> FileUploader.store()
 
-    {:noreply, socket}
+    {:reply, :ok, socket}
   end
 
   defp keys_to_atoms(params) do

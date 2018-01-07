@@ -9,7 +9,7 @@ defmodule FileUploadWeb.FileUploader do
   @versions [:processed]
   @extension_whitelist ~w(.jpg .jpeg .gif .png .mp4 .webm .mkv)
 
-  # TODO: VALIDAR SE DURATION NÃO PASSOU DO LIMITE
+  # TODO: VALIDAR SE DURATION NÃO PASSOU DO LIMITE de duração
 
   # ex 00:00:02
   defp convert_seconds_to_ffmpeg_time(seconds) do
@@ -22,19 +22,31 @@ defmodule FileUploadWeb.FileUploader do
     IO.inspect scope
     IO.inspect scope.end_range
     IO.inspect scope.start_range
-    IO.inspect String.to_integer(scope.end_range)
-    IO.inspect String.to_integer(scope.start_range)
 
-    start = scope.start_range
+    start_range = if String.valid?(scope.start_range) do
+      String.to_integer(scope.start_range)
+    else
+      scope.start_range
+    end
+    end_range = if String.valid?(scope.end_range) do
+      String.to_integer(scope.end_range)
+    else
+      scope.end_range
+    end
+
+    IO.inspect start_range
+    IO.inspect end_range
+
+    start = start_range
       |> convert_seconds_to_ffmpeg_time
 
-    duration = String.to_integer(scope.end_range) - String.to_integer(scope.start_range)
+    duration = end_range - scope.start_range
     duration = duration
       |> convert_seconds_to_ffmpeg_time
 
     {:ffmpeg, fn(input, output) ->
-      "-i #{input} -f webm -ss #{start} -t #{duration} #{output}"
-    end, :webm}
+      "-i #{input} -f mp4 -vf scale=w=1280:h=720:force_original_aspect_ratio=decrease -ss #{start} -t #{duration} #{output}"
+    end, :mp4}
   end
 
   # ffmpeg -i movie.mp4 -ss 00:00:03 -t 00:00:08 -async 1 cut.mp4
